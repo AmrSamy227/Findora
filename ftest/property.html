@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Property Details — Findora</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .gallery-main{width:100%;height:420px;object-fit:cover;border-radius:12px}
+    .gallery-thumbs img{height:84px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid transparent}
+    .gallery-thumbs img.active{border-color:var(--primary-gold)}
+    .meta-row{display:flex;gap:12px;flex-wrap:wrap}
+    .map-wrap{height:320px;border-radius:12px;overflow:hidden;border:1px solid var(--border-color)}
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg">
+    <div class="container d-flex align-items-center">
+      <a class="navbar-brand" href="index.html">FINDORA</a>
+      <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">☰</button>
+      <div class="collapse navbar-collapse" id="navContent">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="search.html">Search</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html#contact">Contact</a></li>
+          <li class="nav-item"><a class="nav-link" href="hr-dashboard.html">HR</a></li>
+        </ul>
+        <div class="ms-3">
+          <!-- Back button removed (only in HR page) -->
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-4">
+    <div id="content" class="fade-up"></div>
+  </main>
+
+  <footer></footer>
+
+  <script>
+    function qParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    function getAllUnitsIndexed() {
+      const projectsLocal = JSON.parse(localStorage.getItem("projectsData")) || [];
+      let units = [];
+      projectsLocal.forEach(project => {
+        (project.units || []).forEach(unit => {
+          units.push({ ...unit, projectName: project.name, projectImg: project.img });
+        });
+      });
+      return units.map((u, i) => ({ ...u, _idx: i }));
+    }
+
+    function renderProperty(u) {
+      if(!u) {
+        document.getElementById('content').innerHTML = '<div class="card card-dark p-4"><h4 class="gold">Property not found</h4><p>The requested property could not be located.</p><a href="search.html" class="btn btn-primary">Back to search</a></div>';
+        return;
+      }
+
+      // prepare images
+      const imgs = (u.images && u.images.length) ? u.images.slice() : [];
+      if(u.img && !imgs.includes(u.img)) imgs.unshift(u.img);
+      if(u.projectImg && !imgs.includes(u.projectImg)) imgs.push(u.projectImg);
+      if(imgs.length === 0) imgs.push('https://picsum.photos/900/600');
+
+      const mapQuery = encodeURIComponent(u.address || (u.projectName + ' ' + u.name));
+      const mapSrc = `https://www.google.com/maps?q=${mapQuery}&output=embed`;
+
+      document.getElementById('content').innerHTML = `
+        <div class="card card-dark p-4">
+          <div class="row g-4">
+            <div class="col-lg-8">
+              <img id="mainImg" src="${imgs[0]}" class="gallery-main mb-3" />
+              <div class="d-flex gap-2 gallery-thumbs">
+                ${imgs.map((src, i) => `<img data-src="${src}" class="${i===0? 'active':''}" src="${src}"/>`).join('')}
+              </div>
+              <hr style="border-color:var(--border-color);margin:18px 0"/>
+              <h3 class="gold">${u.name}</h3>
+              <p class="text-muted">${u.projectName} • ${u.type || ''}</p>
+              <p>${u.desc || ''}</p>
+              <div class="meta-row mt-3">
+                <div class="card-dark p-3">Price: <strong class="gold">${u.price || '-'}</strong></div>
+                <div class="card-dark p-3">Area: <strong>${u.area || '-'}</strong></div>
+                <div class="card-dark p-3">Rooms: <strong>${u.rooms ?? '-'}</strong></div>
+                <div class="card-dark p-3">Payment: <strong>${u.payment || '-'}</strong></div>
+                <div class="card-dark p-3">Delivery: <strong>${u.delivery || '-'}</strong></div>
+              </div>
+            </div>
+            <div class="col-lg-4">
+              <div class="card-dark p-3 mb-3">
+                <h5 class="gold">Location</h5>
+                <div class="map-wrap mb-2">
+                  <iframe src="${mapSrc}" width="100%" height="100%" style="border:0;" loading="lazy"></iframe>
+                </div>
+                <a target="_blank" href="https://www.google.com/maps/search/?api=1&query=${mapQuery}" class="btn btn-primary w-100">Open in Google Maps</a>
+              </div>
+
+              <div class="card-dark p-3">
+                <h6 class="gold">Contact Agent</h6>
+                <p class="text-muted">For inquiries about this unit, contact the project agent.</p>
+                <p><strong>Email:</strong> ${u.agentEmail || 'info@findora.com'}</p>
+                <p><strong>Phone:</strong> ${u.agentPhone || '—'}</p>
+                <a href="mailto:${u.agentEmail || 'info@findora.com'}" class="btn btn-gold w-100">Contact</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // thumbnails interaction
+      document.querySelectorAll('.gallery-thumbs img').forEach(img => {
+        img.addEventListener('click', function(){
+          document.getElementById('mainImg').src = this.dataset.src;
+          document.querySelectorAll('.gallery-thumbs img').forEach(i=>i.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
+    }
+
+    // main
+    (function(){
+      const idx = parseInt(qParam('idx'));
+      const units = getAllUnitsIndexed();
+      const unit = Number.isInteger(idx) && idx >= 0 ? units[idx] : null;
+      renderProperty(unit);
+
+      // fade-up observer
+      const obs = new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting) e.target.classList.add('visible');})},{threshold:0.12});
+      document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

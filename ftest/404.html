@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Page Not Found - FINDORA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      /* Palette moved to styles.css */
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: var(--bg-dark);
+        background-image: 
+          radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+          radial-gradient(circle at 80% 80%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
+        color: var(--text-primary);
+        font-family: 'Poppins', 'Roboto', Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+      }
+
+      body::before {
+        content: '404';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 30vw;
+        font-weight: 700;
+        color: rgba(212, 175, 55, 0.03);
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      #message {
+        background: var(--bg-card);
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 48px 40px;
+        border-radius: 20px;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid rgba(212, 175, 55, 0.2);
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        animation: fadeInUp 0.8s ease-out;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      #message h2 {
+        color: var(--primary-gold);
+        font-weight: 700;
+        font-size: clamp(3rem, 8vw, 5rem);
+        margin: 0 0 1rem;
+        text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      #message h1 {
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0 0 1.5rem;
+      }
+
+      #message p {
+        line-height: 1.8;
+        margin: 1rem 0 1.5rem;
+        font-size: clamp(0.95rem, 2vw, 1rem);
+        color: var(--text-secondary);
+      }
+
+      #message h3 {
+        color: var(--primary-gold);
+        font-weight: 600;
+        font-size: clamp(1rem, 2.5vw, 1.2rem);
+        margin: 2rem 0 1rem;
+      }
+
+      #message code {
+        background: var(--bg-medium);
+        padding: 2px 8px;
+        border-radius: 6px;
+        color: var(--primary-gold);
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+        border: 1px solid rgba(212, 175, 55, 0.2);
+      }
+
+      #message a {
+        display: inline-block;
+        text-align: center;
+        background: var(--primary-gold);
+        text-transform: uppercase;
+        text-decoration: none;
+        color: var(--bg-dark);
+        padding: 16px 32px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        margin-top: 1.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+      }
+
+      #message a::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+      }
+
+      #message a:hover::before {
+        width: 300px;
+        height: 300px;
+      }
+
+      #message a:hover {
+        background: var(--primary-gold-light);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      #message a:active {
+        transform: translateY(-1px);
+      }
+
+      #load {
+        color: var(--text-muted);
+        text-align: center;
+        font-size: 0.875rem;
+        margin-top: 2rem;
+      }
+
+      /* ===== Scrollbar ===== */
+      ::-webkit-scrollbar {
+        width: 10px;
+        background: var(--bg-dark);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, var(--primary-gold), var(--primary-gold-dark));
+        border-radius: 10px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-gold-light);
+      }
+
+      /* ===== Responsive Design ===== */
+      @media (max-width: 768px) {
+        #message {
+          margin: 20px;
+          padding: 32px 24px;
+          border-radius: 16px;
+        }
+
+        body::before {
+          font-size: 40vw;
+        }
+      }
+
+      @media (max-width: 576px) {
+        #message {
+          margin: 16px;
+          padding: 24px 20px;
+          border-radius: 12px;
+        }
+
+        #message h2 {
+          font-size: 4rem;
+        }
+
+        #message a {
+          padding: 14px 24px;
+          font-size: 0.9rem;
+          width: 100%;
+        }
+      }
+
+      @media (max-width: 400px) {
+        #message {
+          padding: 20px 16px;
+        }
+
+        #message h2 {
+          font-size: 3rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg">
+      <div class="container d-flex align-items-center">
+        <a class="navbar-brand" href="index.html">FINDORA</a>
+        <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">☰</button>
+        <div class="collapse navbar-collapse" id="navContent">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="pricing.html">Pricing</a></li>
+            <li class="nav-item"><a class="nav-link" href="customers.html">Customers</a></li>
+            <li class="nav-item"><a class="nav-link" href="search.html">Search</a></li>
+            <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+            <!-- Back button removed (only in HR page) -->
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div id="message">
+      <h2>404</h2>
+      <h1>Page Not Found</h1>
+      <p>The specified file was not found on this website. Please check the URL for mistakes and try again.</p>
+      <h3>Why am I seeing this?</h3>
+      <p>This page was generated by the Firebase Command-Line Interface. To modify it, edit the <code>404.html</code> file in your project's configured <code>public</code> directory.</p>
+      <a href="index.html">Go to Homepage</a>
+    </div>
+  </body>
+</html>

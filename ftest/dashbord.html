@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Responsive Dashboard with Language Toggle</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- SheetJS (js-xlsx) library for Excel file parsing -->
+  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+
+  <style>
+    /* ===== Modern Color Palette ===== */
+    :root {
+      --primary-gold: #d4af37;
+      --primary-gold-light: #FFC107;
+      --primary-gold-dark: #b8952f;
+      --bg-dark: #0a0a0a;
+      --bg-medium: #181818;
+      --bg-card: #1a1a1a;
+      --bg-hover: #222;
+      --text-primary: #ffffff;
+      --text-secondary: #e0e0e0;
+      --text-muted: #999;
+      --shadow-sm: 0 2px 8px rgba(212, 175, 55, 0.1);
+      --shadow-md: 0 4px 16px rgba(212, 175, 55, 0.2);
+      --shadow-lg: 0 8px 32px rgba(212, 175, 55, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg-dark) !important;
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
+      color: var(--text-primary) !important;
+      font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* ===== Navbar ===== */
+    .navbar {
+      background: rgba(26, 26, 26, 0.95) ;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow-sm);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+      padding: 1rem 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .navbar.scrolled {
+      background: rgba(10, 10, 10, 0.98) !important;
+      box-shadow: var(--shadow-md);
+    }
+
+    .navbar-brand {
+      color: var(--primary-gold) !important;
+      font-size: 1.7rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      transition: all 0.3s ease;
+      text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+    }
+
+    .navbar-brand:hover {
+      color: var(--primary-gold-light) !important;
+      transform: scale(1.05);
+    }
+
+    .navbar-nav .nav-link {
+      color: var(--primary-gold) !important;
+      font-weight: 600;
+      padding: 0.5rem 1rem !important;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .navbar-nav .nav-link:hover,
+    .navbar-nav .nav-link.active {
+      color: var(--text-primary) !important;
+      background: rgba(212, 175, 55, 0.1);
+    }
+
+    .navbar-toggler {
+      border: 1px solid var(--primary-gold);
+    }
+
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(212, 175, 55, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+
+    /* ===== Content ===== */
+    #content {
+      padding: 2rem;
+      margin: 0 auto;
+      max-width: 1400px;
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ===== Summary Cards ===== */
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .summary-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 1.5rem;
+      color: var(--text-primary);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      box-shadow: var(--shadow-md);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      animation: fadeInUp 0.6s ease-out both;
+    }
+
+    .summary-card:nth-child(1) { animation-delay: 0.1s; }
+    .summary-card:nth-child(2) { animation-delay: 0.2s; }
+    .summary-card:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .summary-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .summary-card:hover::before {
+      left: 100%;
+    }
+
+    .summary-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary-gold);
+    }
+
+    .summary-card h6 {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+      color: var(--primary-gold);
+    }
+
+    .summary-card p {
+      font-weight: 700;
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      margin: 0;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+
+    .summary-card:hover p {
+      color: var(--primary-gold-light);
+    }
+
+    /* ===== Projects Section ===== */
+    .projects-section {
+      margin-top: 2rem;
+    }
+
+    .project-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      color: var(--text-primary);
+      border: 1px solid rgba(212, 175, 55, 0.1);
+      box-shadow: var(--shadow-sm);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      animation: fadeIn 0.6s ease-out both;
+    }
+
+    .project-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary-gold);
+    }
+
+    .project-image {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      transition: all 0.3s ease;
+    }
+
+    .project-card:hover .project-image {
+      transform: scale(1.05);
+      filter: brightness(1);
+    }
+
+    .project-info {
+      padding: 1rem;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .project-info h6 {
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--primary-gold);
+      font-size: 1.1rem;
+    }
+
+    .project-info span {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .project-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      margin-top: auto;
+      padding-top: 0.5rem;
+    }
+
+    .add-project-btn {
+      background: var(--primary-gold) !important;
+      border-radius: 12px;
+      padding: 0.875rem 2rem;
+      border: none;
+      color: var(--bg-dark) !important;
+      font-weight: 600;
+      margin-top: 2rem;
+      display: inline-block;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .add-project-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .add-project-btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .add-project-btn:hover {
+      background: var(--primary-gold-light) !important;
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .add-project-btn:active {
+      transform: translateY(-1px);
+    }
+
+    /* ===== Loading Overlay ===== */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      backdrop-filter: blur(5px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: var(--primary-gold);
+      font-size: 1.5rem;
+      flex-direction: column;
+      gap: 1.5rem;
+      display: none;
+    }
+
+    .spinner-border {
+      width: 3rem;
+      height: 3rem;
+      border: 4px solid rgba(212, 175, 55, 0.3);
+      border-top-color: var(--primary-gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ===== Modals ===== */
+    .modal-content.bg-dark.text-light {
+      background: var(--bg-card) !important;
+      color: var(--text-primary) !important;
+      border: 1px solid var(--primary-gold);
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .modal-header {
+      border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    }
+
+    .modal-footer {
+      border-top: 1px solid rgba(212, 175, 55, 0.2);
+    }
+
+    /* ===== Buttons ===== */
+    .btn-primary {
+      background: var(--primary-gold) !important;
+      border-color: var(--primary-gold) !important;
+      color: var(--bg-dark) !important;
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 0.75rem 1.5rem;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-gold-light) !important;
+      border-color: var(--primary-gold-light) !important;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-outline-light, .btn-outline-warning {
+      color: var(--primary-gold) !important;
+      border-color: var(--primary-gold) !important;
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 0.5rem 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .btn-outline-light:hover, .btn-outline-warning:hover {
+      background: var(--primary-gold) !important;
+      color: var(--bg-dark) !important;
+      border-color: var(--primary-gold) !important;
+      transform: translateY(-2px);
+    }
+
+    .btn-outline-danger {
+      color: #FF4500 !important;
+      border-color: #FF4500 !important;
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 0.5rem 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .btn-outline-danger:hover {
+      background: #FF4500 !important;
+      color: var(--bg-dark) !important;
+      border-color: #FF4500 !important;
+      transform: translateY(-2px);
+    }
+
+    /* ===== Form Controls ===== */
+    input.form-control-sm,
+    select.form-select-sm,
+    textarea.form-control-sm {
+      background: var(--bg-medium) !important;
+      color: var(--text-primary) !important;
+      border: 2px solid var(--primary-gold) !important;
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      transition: all 0.3s ease;
+    }
+
+    input.form-control-sm:focus,
+    select.form-select-sm:focus,
+    textarea.form-control-sm:focus {
+      outline: none;
+      border-color: var(--primary-gold-light) !important;
+      box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
+      background: var(--bg-hover) !important;
+    }
+
+    input.form-control-sm::placeholder,
+    textarea.form-control-sm::placeholder {
+      color: var(--text-muted);
+    }
+
+    .form-label {
+      color: var(--primary-gold);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ===== Scrollbar ===== */
+    #modalUnitsContainer {
+      max-height: 60vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary-gold) var(--bg-card);
+    }
+
+    #modalUnitsContainer::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    #modalUnitsContainer::-webkit-scrollbar-track {
+      background: var(--bg-card);
+      border-radius: 10px;
+    }
+
+    #modalUnitsContainer::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--primary-gold), var(--primary-gold-dark));
+      border-radius: 10px;
+    }
+
+    #modalUnitsContainer::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-gold-light);
+    }
+
+    ::-webkit-scrollbar {
+      width: 10px;
+      background: var(--bg-dark);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, var(--primary-gold), var(--primary-gold-dark));
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-gold-light);
+    }
+
+    /* ===== Unit Cards in Modal ===== */
+    .card.bg-secondary {
+      background: var(--bg-card) !important;
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .card.bg-secondary:hover {
+      border-color: var(--primary-gold);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* ===== Responsive Design ===== */
+    @media (max-width: 992px) {
+      #content {
+        padding: 1.5rem;
+      }
+
+      .summary-cards {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+      }
+
+      .navbar {
+        padding: 0.75rem 1rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      #content {
+        padding: 1rem;
+      }
+
+      .summary-cards {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .summary-card {
+        min-width: auto;
+      }
+
+      .navbar-nav {
+        margin-top: 1rem;
+      }
+
+      .navbar-nav .nav-link {
+        margin: 0.25rem 0;
+      }
+
+      .add-project-btn {
+        width: 100%;
+        text-align: center;
+        margin-top: 1.5rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      #content {
+        padding: 0.75rem;
+      }
+
+      .navbar-brand {
+        font-size: 1.4rem;
+      }
+
+      .summary-card {
+        padding: 1.25rem;
+      }
+
+      .project-card {
+        border-radius: 12px;
+      }
+
+      .project-image {
+        height: 140px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .navbar-brand {
+        font-size: 1.2rem;
+        letter-spacing: 1px;
+      }
+
+      .summary-card p {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body class="ltr">
+
+  <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+      <div class="container d-flex align-items-center">
+        <a class="navbar-brand" href="index.html">FINDORA</a>
+        <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">☰</button>
+        <div class="collapse navbar-collapse" id="navContent">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link active" href="dashbord.html">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="search.html">Search</a></li>
+            <li class="nav-item"><a class="nav-link" href="Contact.html">Contact</a></li>
+            <li class="nav-item"><a class="nav-link" href="hr-dashboard.html">HR</a></li>
+                                <!-- ✅ هنا صورة البروفايل -->
+                    <li class="nav-item dropdown ms-3">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown"
+                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="https://i.pravatar.cc/40" alt="Profile" class="rounded-circle" width="40"
+                                height="40" style="object-fit: cover; border:2px solid #1f7aec;">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="#">
+                                    <i class="bi bi-person-circle me-2"></i> Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="#">
+                                    <i class="bi bi-gear me-2"></i> Settings
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center text-danger" href="#">
+                                    <i class="bi bi-box-arrow-right me-2"></i> Logout
+                                </a>
+                            </li>
+                        </ul>
+
+          </ul>
+          <div class="ms-3">
+            <!-- Back button removed (only in HR page) -->
+          </div>
+        </div>
+      </div>
+    </nav>
+ 
+
+  <!-- Main Content -->
+  <main id="content" tabindex="-1">
+    <section id="dashboard" aria-live="polite">
+      <h1 id="pageTitle" class="mb-1">Projects</h1>
+      <p id="pageSubtitle" class="text-muted mb-4">Manage your compounds & developments</p>
+
+      <!-- Summary metrics -->
+      <div class="summary-cards" role="region" aria-label="Summary statistics">
+        <div class="summary-card" tabindex="0">
+          <h6 id="unitsAvailableLabel">Units Available</h6>
+          <p id="unitsAvailableCount">0</p>
+        </div>
+        <div class="summary-card" tabindex="0">
+          <h6 id="unitsSoldLabel">Units Sold</h6>
+          <p id="unitsSoldCount">0</p>
+        </div>
+        <div class="summary-card" tabindex="0">
+          <h6 id="unitsPendingLabel">Units Pending</h6>
+          <p id="unitsPendingCount">0</p>
+        </div>
+      </div>
+
+      <!-- Projects list -->
+      <section class="projects-section" aria-label="Projects list">
+        <h2 id="projectsHeading" class="h4 mb-3">Projects</h2>
+
+        <div class="row g-3" id="projectsGrid">
+          <!-- سيتم ملء هذا القسم بواسطة JavaScript -->
+        </div>
+
+        <button id="addProjectBtn" class="add-project-btn" type="button" aria-label="Add Project">
+          Add Project
+        </button>
+        <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display: none;" />
+        <button id="importExcelBtn" class="add-project-btn ms-2" type="button" aria-label="Import Projects from Excel">
+          Import from Excel
+        </button>
+      </section>
+    </section>
+
+    <!-- Units Modal -->
+    <div class="modal fade" id="unitsModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header border-0">
+            <h5 class="modal-title" id="unitsModalLabel">Units</h5>
+            <div class="d-flex gap-2">
+              <button id="addUnitBtn" type="button" class="btn btn-sm btn-primary">Add Unit</button>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                aria-label="Close"></button>
+            </div>
+          </div>
+          <div class="modal-body">
+            <div class="row" id="modalUnitsContainer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project Form Modal -->
+    <div class="modal fade" id="projectFormModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header border-0">
+            <h5 class="modal-title" id="projectFormTitle">Add Project</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="projectId">
+            <div class="mb-3">
+              <label class="form-label">Project Name</label>
+              <input id="projectName" type="text" class="form-control form-control-sm" placeholder="Project name">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Project Image</label>
+              <input id="projectImgFile" type="file" accept="image/*" class="form-control form-control-sm mb-2">
+              <input id="projectImg" type="text" class="form-control form-control-sm" placeholder="Or paste image URL">
+              <img id="projectImgPreview" src="" style="max-width:100%;margin-top:8px;display:none;border-radius:8px;">
+            </div>
+            <div class="text-end">
+              <button type="button" class="btn btn-primary btn-sm" id="saveProjectBtn">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Unit Form Modal -->
+    <div class="modal fade" id="unitFormModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header border-0">
+            <h5 class="modal-title" id="unitFormTitle">Add Unit</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="unitId">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Unit Name</label>
+                <input id="unitName" type="text" class="form-control form-control-sm" placeholder="Unit 101">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Area (m²)</label>
+                <input id="unitArea" type="text" class="form-control form-control-sm" placeholder="120">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Rooms</label>
+                <input id="unitRooms" type="number" min="0" class="form-control form-control-sm" placeholder="3">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Price</label>
+                <input id="unitPrice" type="text" class="form-control form-control-sm" placeholder="$120,000">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Payment</label>
+                <select id="unitPayment" class="form-select form-select-sm">
+                  <option value="Cash">Cash</option>
+                  <option value="Installments">Installments</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Delivery</label>
+                <select id="unitDelivery" class="form-select form-select-sm">
+                  <option value="Immediate">Immediate</option>
+                  <option value="After period">After period</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Status</label>
+                <select id="unitStatus" class="form-select form-select-sm">
+                  <option value="Available">Available</option>
+                  <option value="Sold">Sold</option>
+                  <option value="Pending">Pending</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Unit Image</label>
+                <input id="unitImgFile" type="file" accept="image/*" class="form-control form-control-sm mb-2">
+                <input id="unitImg" type="text" class="form-control form-control-sm" placeholder="Or paste image URL">
+                <img id="unitImgPreview" src="" style="max-width:100%;margin-top:8px;display:none;border-radius:8px;">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Unit Type</label>
+                <select id="unitType" class="form-select form-select-sm">
+                  <option value="Apartment">Apartment</option>
+                  <option value="Villa">Villa</option>
+                  <option value="Clinic">Clinic</option>
+                  <option value="Office">Office</option>
+                  <option value="Shop">Shop</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea id="unitDesc" class="form-control form-control-sm" rows="3"
+                  placeholder="Short description"></textarea>
+              </div>
+            </div>
+            <div class="text-end mt-3">
+              <button type="button" class="btn btn-primary btn-sm" id="saveUnitBtn">Save Unit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p>Importing data, please wait...</p>
+  </div>
+
+  <!-- Bootstrap JS and Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // منع الدخول بدون تسجيل دخول
+    if (localStorage.getItem("isLoggedIn") !== "true") {
+      window.location.href = "login.html";
+    }
+
+    // ====== Data (projects + units) ======
+    // حاول قراءة البيانات من localStorage، لو مفيش استخدم البيانات الافتراضية
+    let projects = JSON.parse(localStorage.getItem("projectsData")) || [
+      {
+        id: crypto.randomUUID(),
+        name: "The Ridge",
+        img: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/6c5ead7e-fd13-4c51-bf51-6e23a5435ff9.png",
+        units: [
+          { id: crypto.randomUUID(), name: "Unit 101", area: "120 m²", price: "$120,000", rooms: 3, payment: "Cash", delivery: "Immediate", img: "https://picsum.photos/300/200?random=1", desc: "Sunny corner unit.", status: "Available" },
+          { id: crypto.randomUUID(), name: "Unit 102", area: "140 m²", price: "$150,000", rooms: 4, payment: "Installments", delivery: "After period", img: "https://picsum.photos/300/200?random=2", desc: "Spacious with balcony.", status: "Sold" },
+          { id: crypto.randomUUID(), name: "Unit 103", area: "160 m²", price: "$180,000", rooms: 4, payment: "Cash", delivery: "Immediate", img: "https://picsum.photos/300/200?random=3", desc: "Park view.", status: "Pending" }
+        ]
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "The Grove",
+        img: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/71b7d089-63d5-4035-b292-eb867a8d07ad.png",
+        units: [
+          { id: crypto.randomUUID(), name: "Unit A1", area: "110 m²", price: "$100,000", rooms: 3, payment: "Cash", delivery: "Immediate", img: "https://picsum.photos/300/200?random=4", desc: "", status: "Available" },
+          { id: crypto.randomUUID(), name: "Unit A2", area: "130 m²", price: "$130,000", rooms: 3, payment: "Installments", delivery: "After period", img: "https://picsum.photos/300/200?random=5", desc: "", status: "Available" },
+          { id: crypto.randomUUID(), name: "Unit A3", area: "150 m²", price: "$160,000", rooms: 4, payment: "Cash", delivery: "Immediate", img: "https://picsum.photos/300/200?random=6", desc: "", status: "Sold" }
+        ]
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "The Heights",
+        img: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/f6a8dbcf-55e3-421b-89d8-d7498ef96815.png",
+        units: [
+          { id: crypto.randomUUID(), name: "Unit H1", area: "90 m²", price: "$90,000", rooms: 2, payment: "Cash", delivery: "Immediate", img: "https://picsum.photos/300/200?random=7", desc: "", status: "Available" },
+          { id: crypto.randomUUID(), name: "Unit H2", area: "115 m²", price: "$110,000", rooms: 3, payment: "Installments", delivery: "After period", img: "https://picsum.photos/300/200?random=8", desc: "", status: "Pending" }
+        ]
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "The Meadows",
+        img: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/866e492e-9cbd-4032-9696-02f9a8b988f4.png",
+        units: [
+          { id: crypto.randomUUID(), name: "Unit M1", area: "200 m²", price: "$200,000", rooms: 5, payment: "Installments", delivery: "After period", img: "https://picsum.photos/300/200?random=9", desc: "", status: "Available" },
+          { id: crypto.randomUUID(), name: "Unit M2", area: "220 m²", price: "$230,000", rooms: 5, payment: "Cash", delivery: "Immediate", img: "https://picsum.photos/300/200?random=10", desc: "", status: "Sold" }
+        ]
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "The Pines",
+        img: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/71672f47-0814-494a-905b-c2fa19fa54c1.png",
+        units: [{ id: crypto.randomUUID(), name: "Unit P1", area: "125 m²", price: "$125,000", rooms: 3, payment: "Cash", delivery: "Immediate", img: "https://picsum.photos/300/200?random=11", desc: "", status: "Available" }]
+      },
+      {
+        id: crypto.randomUUID(),
+        name: "The Willows",
+        img: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/6bae0737-90f8-483b-93b3-c167a359b3b3.png",
+        units: [
+          { id: crypto.randomUUID(), name: "Unit W1", area: "140 m²", price: "$140,000", rooms: 3, payment: "Installments", delivery: "After period", img: "https://picsum.photos/300/200?random=12", desc: "", status: "Available" },
+          { id: crypto.randomUUID(), name: "Unit W2", area: "160 m²", price: "$160,000", rooms: 4, payment: "Cash", delivery: "Immediate", img: "https://picsum.photos/300/200?random=13", desc: "", status: "Sold" },
+          { id: crypto.randomUUID(), name: "Unit W3", area: "180 m²", price: "$180,000", rooms: 4, payment: "Installments", delivery: "After period", img: "https://picsum.photos/300/200?random=14", desc: "", status: "Pending" }
+        ]
+      }
+    ];
+
+    // دالة لحفظ البيانات في localStorage
+    function saveProjectsToLocalStorage() {
+      localStorage.setItem("projectsData", JSON.stringify(projects));
+    }
+
+    let currentProjectId = null; // لاستخدامه في مودال الوحدات
+    const projectsGrid = document.getElementById('projectsGrid');
+    const modalUnitsContainer = document.getElementById('modalUnitsContainer');
+    const unitsModalLabel = document.getElementById('unitsModalLabel');
+
+    const unitsModal = new bootstrap.Modal(document.getElementById('unitsModal'));
+    const projectFormModal = new bootstrap.Modal(document.getElementById('projectFormModal'));
+    const unitFormModal = new bootstrap.Modal(document.getElementById('unitFormModal'));
+
+    // ====== Summary Metrics Update ======
+    function updateSummaryMetrics() {
+      let totalAvailable = 0;
+      let totalSold = 0;
+      let totalPending = 0;
+
+      projects.forEach(project => {
+        project.units.forEach(unit => {
+          if (unit.status === 'Available') {
+            totalAvailable++;
+          } else if (unit.status === 'Sold') {
+            totalSold++;
+          } else if (unit.status === 'Pending') {
+            totalPending++;
+          }
+        });
+      });
+
+      document.getElementById('unitsAvailableCount').textContent = totalAvailable;
+      document.getElementById('unitsSoldCount').textContent = totalSold;
+      document.getElementById('unitsPendingCount').textContent = totalPending;
+      saveProjectsToLocalStorage(); // <== أضف هذا السطر
+    }
+
+    // ====== Render Projects ======
+    function renderProjects() {
+      projectsGrid.innerHTML = '';
+      projects.forEach((p) => {
+        const col = document.createElement('div');
+        col.className = 'col-6 col-sm-4 col-md-3 col-lg-2';
+
+        col.innerHTML = `
+          <article class="project-card" data-id="${p.id}" tabindex="0" aria-label="Project ${p.name}">
+            <img src="${p.img}" alt="${p.name}" class="project-image" loading="lazy" onerror="this.style.display='none';" />
+            <div class="project-info">
+              <h6>${p.name}</h6>
+              <span>${p.units.length} units</span>
+              <div class="project-actions">
+                <button class="btn btn-sm btn-outline-light" data-action="addUnit"><i class="bi bi-plus-lg"></i> Unit</button>
+                <button class="btn btn-sm btn-outline-warning" data-action="editProject"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger" data-action="deleteProject"><i class="bi bi-trash"></i></button>
+              </div>
+            </div>
+          </article>
+        `;
+        projectsGrid.appendChild(col);
+
+        // Click handlers
+        const card = col.querySelector('.project-card');
+        card.addEventListener('click', (e) => {
+          // لو click على أزرار الأكشن، منفتحش المودال
+          const actionBtn = e.target.closest('button[data-action]');
+          if (actionBtn) return;
+
+          const id = card.getAttribute('data-id');
+          openUnitsModal(id);
+        });
+
+        // Action buttons
+        const addUnitBtn = col.querySelector('button[data-action="addUnit"]');
+        const editBtn = col.querySelector('button[data-action="editProject"]');
+        const delBtn = col.querySelector('button[data-action="deleteProject"]');
+
+        addUnitBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = card.getAttribute('data-id');
+          currentProjectId = id;
+          openUnitForm(); // add
+        });
+
+        editBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = card.getAttribute('data-id');
+          openProjectForm(id);
+        });
+
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = card.getAttribute('data-id');
+          deleteProject(id);
+        });
+      });
+    }
+
+    // ====== Units Modal & rendering ======
+    function openUnitsModal(projectId) {
+      currentProjectId = projectId;
+      const project = projects.find(p => p.id === projectId);
+      unitsModalLabel.textContent = `Units in ${project.name}`;
+      renderUnits();
+      unitsModal.show();
+    }
+
+    function renderUnits() {
+      const project = projects.find(p => p.id === currentProjectId);
+      modalUnitsContainer.innerHTML = '';
+
+      if (!project || project.units.length === 0) {
+        modalUnitsContainer.innerHTML = '<p class="text-center text-muted">No units found for this project.</p>';
+        return;
+      }
+
+      project.units.forEach(unit => {
+        const col = document.createElement('div');
+        col.className = 'col-12 col-sm-6 col-md-4 col-lg-3';
+        col.innerHTML = `
+          <div class="card bg-secondary text-light mb-3 shadow-sm">
+            <img src="${unit.img || 'https://picsum.photos/300/200'}" class="card-img-top" alt="${unit.name}">
+            <div class="card-body">
+              <h5 class="card-title">${unit.name}</h5>
+              <p class="card-text mb-1">Type: ${unit.type || '-'}</p>
+              <p class="card-text mb-1">Area: ${unit.area || '-'}</p>
+              <p class="card-text mb-1">Rooms: ${unit.rooms ?? '-'}</p>
+              <p class="card-text mb-1">Price: ${unit.price || '-'}</p>
+              <p class="card-text mb-1">Payment: ${unit.payment || '-'}</p>
+              <p class="card-text mb-1">Delivery: ${unit.delivery || '-'}</p>
+              <p class="card-text mb-1">Status: ${unit.status || '-'}</p>
+              ${unit.desc ? `<p class="card-text small">${unit.desc}</p>` : ''}
+              <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-sm btn-warning" data-unit="${unit.id}"><i class="bi bi-pencil"></i> Edit</button>
+                <button class="btn btn-sm btn-danger" data-del="${unit.id}"><i class="bi bi-trash"></i> Delete</button>
+              </div>
+            </div>
+          </div>
+        `;
+        modalUnitsContainer.appendChild(col);
+
+        // Edit / Delete handlers
+        col.querySelector('[data-unit]').addEventListener('click', () => openUnitForm(unit.id));
+        col.querySelector('[data-del]').addEventListener('click', () => deleteUnit(unit.id));
+      });
+    }
+
+    // ====== Project CRUD ======
+    document.getElementById('addProjectBtn').addEventListener('click', () => openProjectForm());
+
+    function openProjectForm(id = null) {
+      const title = document.getElementById('projectFormTitle');
+      const projectId = document.getElementById('projectId');
+      const name = document.getElementById('projectName');
+      const img = document.getElementById('projectImg');
+
+      if (id) {
+        const p = projects.find(pr => pr.id === id);
+        title.textContent = 'Edit Project';
+        projectId.value = p.id;
+        name.value = p.name;
+        img.value = p.img || '';
+      } else {
+        title.textContent = 'Add Project';
+        projectId.value = '';
+        name.value = '';
+        img.value = '';
+      }
+      projectFormModal.show();
+    }
+
+    document.getElementById('saveProjectBtn').addEventListener('click', () => {
+      const id = document.getElementById('projectId').value;
+      const name = document.getElementById('projectName').value.trim();
+      const img = document.getElementById('projectImg').value.trim();
+
+      if (!name) {
+        alert('Project Name cannot be empty.');
+        return;
+      }
+
+      if (id) {
+        const p = projects.find(pr => pr.id === id);
+        if (p) {
+          p.name = name;
+          p.img = img || p.img;
+        }
+      } else {
+        // Check for duplicate project name
+        if (projects.some(p => p.name === name)) {
+          alert('A project with this name already exists.');
+          return;
+        }
+        projects.push({ id: crypto.randomUUID(), name, img: img || '', units: [] });
+      }
+
+      projectFormModal.hide();
+      renderProjects();
+      updateSummaryMetrics(); // Update summary after project CRUD
+    });
+
+    function deleteProject(id) {
+      if (!confirm('Are you sure you want to delete this project and all its units?')) return;
+      projects = projects.filter(p => p.id !== id);
+      // لو كنا فاتحين وحدات المشروع ده، نقفل المودال
+      if (currentProjectId === id) unitsModal.hide();
+      renderProjects();
+      updateSummaryMetrics(); // Update summary after project CRUD
+    }
+
+    // ====== Unit CRUD ======
+    document.getElementById('addUnitBtn').addEventListener('click', () => openUnitForm());
+
+    function openUnitForm(unitId = null) {
+      const title = document.getElementById('unitFormTitle');
+      const uid = document.getElementById('unitId');
+      const name = document.getElementById('unitName');
+      const area = document.getElementById('unitArea');
+      const rooms = document.getElementById('unitRooms');
+      const price = document.getElementById('unitPrice');
+      const payment = document.getElementById('unitPayment');
+      const delivery = document.getElementById('unitDelivery');
+      const status = document.getElementById('unitStatus');
+      const img = document.getElementById('unitImg');
+      const desc = document.getElementById('unitDesc');
+      const type = document.getElementById('unitType');
+
+      if (!currentProjectId) return; // Should not happen if called from project card
+
+      if (unitId) {
+        const project = projects.find(p => p.id === currentProjectId);
+        const u = project.units.find(x => x.id === unitId);
+        if (u) {
+          title.textContent = 'Edit Unit';
+          uid.value = u.id;
+          name.value = u.name || '';
+          area.value = (u.area || '').toString().replace(' m²', '');
+          rooms.value = u.rooms ?? '';
+          price.value = u.price || '';
+          payment.value = u.payment || 'Cash';
+          delivery.value = u.delivery || 'Immediate';
+          status.value = u.status || 'Available';
+          img.value = u.img || '';
+          desc.value = u.desc || '';
+          type.value = u.type || 'Apartment';
+        }
+      } else {
+        title.textContent = 'Add Unit';
+        uid.value = '';
+        name.value = '';
+        area.value = '';
+        rooms.value = '';
+        price.value = '';
+        payment.value = 'Cash';
+        delivery.value = 'Immediate';
+        status.value = 'Available';
+        img.value = '';
+        desc.value = '';
+        type.value = 'Apartment';
+      }
+
+      unitFormModal.show();
+    }
+
+    document.getElementById('saveUnitBtn').addEventListener('click', () => {
+      if (!currentProjectId) return;
+
+      const uid = document.getElementById('unitId').value;
+      const name = document.getElementById('unitName').value.trim();
+      const area = parseFloat(document.getElementById('unitArea').value) || 0;
+      const rooms = parseInt(document.getElementById('unitRooms').value || '0', 10);
+      const price = document.getElementById('unitPrice').value.trim();
+      const payment = document.getElementById('unitPayment').value;
+      const delivery = document.getElementById('unitDelivery').value;
+      const status = document.getElementById('unitStatus').value;
+      const img = document.getElementById('unitImg').value.trim();
+      const desc = document.getElementById('unitDesc').value.trim();
+      const type = document.getElementById('unitType').value;
+
+      if (!name) {
+        alert('Unit Name cannot be empty.');
+        return;
+      }
+
+      const project = projects.find(p => p.id === currentProjectId);
+      if (!project) return; // Should not happen
+
+      if (uid) {
+        const u = project.units.find(x => x.id === uid);
+        if (u) {
+          u.name = name;
+          u.area = area > 0 ? `${area} m²` : '';
+          u.rooms = rooms;
+          u.price = price;
+          u.payment = payment;
+          u.delivery = delivery;
+          u.status = status;
+          u.img = img;
+          u.desc = desc;
+          u.type = type;
+        }
+      } else {
+        // Check for duplicate unit name within the project
+        if (project.units.some(u => u.name === name)) {
+          alert('A unit with this name already exists in this project.');
+          return;
+        }
+        project.units.push({
+          id: crypto.randomUUID(),
+          name,
+          area: area > 0 ? `${area} m²` : '',
+          rooms,
+          price,
+          payment,
+          delivery,
+          status,
+          img,
+          desc,
+          type // أضف النوع هنا
+        });
+      }
+
+      unitFormModal.hide();
+      renderUnits();
+      renderProjects(); // لتحديث عدد الوحدات على الكارت
+      updateSummaryMetrics(); // Update summary after unit CRUD
+    });
+
+    function deleteUnit(unitId) {
+      if (!confirm('Are you sure you want to delete this unit?')) return;
+      const project = projects.find(p => p.id === currentProjectId);
+      if (project) {
+        project.units = project.units.filter(u => u.id !== unitId);
+      }
+      renderUnits();
+      renderProjects(); // لتحديث عدد الوحدات على الكارت
+      updateSummaryMetrics(); // Update summary after unit CRUD
+    }
+
+    // ====== Excel Import Functionality ======
+    const excelFileInput = document.getElementById('excelFileInput');
+    const importExcelBtn = document.getElementById('importExcelBtn');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    importExcelBtn.addEventListener('click', () => {
+      excelFileInput.click(); // Trigger the hidden file input click
+    });
+
+    excelFileInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        loadingOverlay.style.display = 'flex'; // Show loading overlay
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          let importSuccess = false;
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            if (workbook.SheetNames.includes('Projects')) {
+              const projectsWorksheet = workbook.Sheets['Projects'];
+              const projectsJson = XLSX.utils.sheet_to_json(projectsWorksheet);
+              processProjectsFromExcel(projectsJson);
+              importSuccess = true;
+            } else {
+              alert('Excel file must contain a sheet named "Projects". Import aborted.');
+            }
+
+            if (workbook.SheetNames.includes('Units')) {
+              const unitsWorksheet = workbook.Sheets['Units'];
+              const unitsJson = XLSX.utils.sheet_to_json(unitsWorksheet);
+              processUnitsFromExcel(unitsJson);
+            }
+
+            renderProjects();
+            updateSummaryMetrics();
+            if (importSuccess) {
+              alert(`${workbook.SheetNames.includes('Units') ? 'Projects and units' : 'Projects'} imported successfully!`);
+            }
+            saveProjectsToLocalStorage();
+
+          } catch (error) {
+            console.error("Error processing Excel file:", error);
+            alert('Error processing Excel file. Please ensure it is a valid Excel format and columns are correct.');
+          } finally {
+            loadingOverlay.style.display = 'none';
+            excelFileInput.value = '';
+          }
+        };
+        reader.onerror = function (error) {
+          console.error("FileReader error:", error);
+          alert('Error reading file. Please try again.');
+          loadingOverlay.style.display = 'none';
+          excelFileInput.value = '';
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        alert('Please select an Excel file to import.');
+      }
+    });
+
+    function processProjectsFromExcel(data) {
+      data.forEach(row => {
+        const projectName = row['ProjectName'];
+        const projectImg = row['ProjectImage'] || '';
+
+        if (!projectName || typeof projectName !== 'string' || projectName.trim() === '') {
+          console.warn("Skipping project row due to invalid or missing 'ProjectName':", row);
+          return; // Skip this row
+        }
+
+        let project = projects.find(p => p.name === projectName);
+        if (!project) {
+          projects.push({
+            id: crypto.randomUUID(),
+            name: projectName,
+            img: projectImg,
+            units: [] // Initialize units array
+          });
+        } else {
+          // Optionally update project image if it's provided in Excel and current is empty
+          if (projectImg && !project.img) {
+            project.img = projectImg;
+          }
+        }
+      });
+    }
+
+    function processUnitsFromExcel(data) {
+      data.forEach(row => {
+        const projectName = row['ProjectName']; // To link unit to project
+        const unitName = row['UnitName'];
+        const unitArea = parseFloat(row['UnitArea']) || 0; // Convert to number
+        const unitRooms = parseInt(row['UnitRooms']) || 0; // Convert to integer
+        const unitPrice = row['UnitPrice'];
+        const unitPayment = row['UnitPayment'];
+        const unitDelivery = row['UnitDelivery'];
+        const unitStatus = row['UnitStatus'] || 'Available'; // Default status
+        const unitImg = row['UnitImage'] || '';
+        const unitDesc = row['UnitDescription'] || '';
+
+        if (!projectName || typeof projectName !== 'string' || projectName.trim() === '') {
+          console.warn("Skipping unit row due to invalid or missing 'ProjectName':", row);
+          return;
+        }
+        if (!unitName || typeof unitName !== 'string' || unitName.trim() === '') {
+          console.warn("Skipping unit row due to invalid or missing 'UnitName':", row);
+          return;
+        }
+
+        const project = projects.find(p => p.name === projectName);
+        if (project) {
+          let unit = project.units.find(u => u.name === unitName);
+          if (!unit) {
+            project.units.push({
+              id: crypto.randomUUID(),
+              name: unitName,
+              area: unitArea > 0 ? `${unitArea} m²` : '',
+              rooms: unitRooms,
+              price: unitPrice || '',
+              payment: unitPayment || 'Cash',
+              delivery: unitDelivery || 'Immediate',
+              status: unitStatus,
+              img: unitImg,
+              desc: unitDesc
+            });
+          } else {
+            // Update existing unit details
+            unit.area = unitArea > 0 ? `${unitArea} m²` : unit.area;
+            unit.rooms = unitRooms;
+            unit.price = unitPrice || unit.price;
+            unit.payment = unitPayment || unit.payment;
+            unit.delivery = unitDelivery || unit.delivery;
+            unit.status = unitStatus || unit.status;
+            unit.img = unitImg || unit.img;
+            unit.desc = unitDesc || unit.desc;
+          }
+        } else {
+          console.warn(`Project "${projectName}" not found for unit "${unitName}". Unit not added. Please ensure project exists in 'Projects' sheet.`);
+        }
+      });
+    }
+    
+
+    // ====== Init render ======
+    renderProjects();
+    updateSummaryMetrics(); // Initial update of summary metrics on page load
+
+    // معاينة صورة المشروع
+document.getElementById('projectImgFile').addEventListener('change', function() {
+  const file = this.files[0];
+  const preview = document.getElementById('projectImgPreview');
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+      document.getElementById('projectImg').value = e.target.result; // حفظ base64 في الحقل النصي
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+document.getElementById('projectImg').addEventListener('input', function() {
+  const val = this.value;
+  const preview = document.getElementById('projectImgPreview');
+  if (val.startsWith('data:image')) {
+    preview.src = val;
+    preview.style.display = 'block';
+  } else if (val.startsWith('http')) {
+    preview.src = val;
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
+  }
+});
+  </script>
+</body>
+
+</html>
+

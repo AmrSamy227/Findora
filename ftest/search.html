@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Findora CRM - Real Estate Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Palette moved to styles.css */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-dark) !important;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
+            color: var(--text-primary) !important;
+            font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+
+    /* ===== Navbar ===== */
+    .navbar {
+      background: rgba(26, 26, 26, 0.95) ;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow-sm);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+      padding: 1rem 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .navbar.scrolled {
+      background: rgba(10, 10, 10, 0.98) !important;
+      box-shadow: var(--shadow-md);
+    }
+
+    .navbar-brand {
+      color: var(--primary-gold) !important;
+      font-size: 1.7rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      transition: all 0.3s ease;
+      text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+    }
+
+    .navbar-brand:hover {
+      color: var(--primary-gold-light) !important;
+      transform: scale(1.05);
+    }
+
+    .navbar-nav .nav-link {
+      color: var(--primary-gold) !important;
+      font-weight: 600;
+      padding: 0.5rem 1rem !important;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .navbar-nav .nav-link:hover,
+    .navbar-nav .nav-link.active {
+      color: var(--text-primary) !important;
+      background: rgba(212, 175, 55, 0.1);
+    }
+
+    .navbar-toggler {
+      border: 1px solid var(--primary-gold);
+    }
+
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(212, 175, 55, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+
+        /* ===== Cards ===== */
+        .card {
+            background: var(--bg-card) !important;
+            border: 1px solid rgba(212, 175, 55, 0.2) !important;
+            border-radius: 16px !important;
+            color: var(--text-primary) !important;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeIn 0.6s ease-out both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-gold) !important;
+        }
+
+        .property-img {
+            border-radius: 12px;
+            object-fit: cover;
+            height: 160px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .property-img {
+            transform: scale(1.05);
+        }
+
+        /* ===== Buttons ===== */
+        .btn-primary,
+        .btn {
+            background: var(--primary-gold) !important;
+            color: var(--bg-dark) !important;
+            border: none !important;
+            font-weight: 600;
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary:hover,
+        .btn:hover {
+            background: var(--primary-gold-light) !important;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .badge {
+            background: var(--primary-gold) !important;
+            color: var(--bg-dark) !important;
+            border-radius: 20px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .badge:hover {
+            background: var(--primary-gold-light) !important;
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* ===== Modal ===== */
+        .modal-content {
+            background: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--primary-gold);
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        /* ===== Chat Ball ===== */
+        #chatBallBtn {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            z-index: 9999;
+            width: 64px;
+            height: 64px;
+            background: var(--primary-gold) !important;
+            color: var(--bg-dark) !important;
+            border-radius: 50%;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 3px solid var(--bg-dark);
+        }
+
+        #chatBallBtn:hover {
+            background: var(--primary-gold-light) !important;
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.4);
+        }
+
+        #chatBallModal {
+            position: fixed;
+            bottom: 110px;
+            right: 32px;
+            z-index: 9999;
+            width: 360px;
+            max-width: calc(100vw - 64px);
+            background: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--primary-gold);
+            display: none;
+            flex-direction: column;
+            padding: 24px 20px 16px 20px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #chatBallModal.active {
+            display: flex;
+        }
+
+        #chatBallModal .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: var(--primary-gold);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        #chatBallModal .close-btn:hover {
+            background: rgba(212, 175, 55, 0.1);
+            transform: rotate(90deg);
+        }
+
+        #chatBallModal h5 {
+            margin-bottom: 8px;
+            color: var(--primary-gold);
+        }
+
+        #chatBallModal p {
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+        }
+
+        #chatBallModal .contact-info {
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+        }
+
+        #chatBallModal form input,
+        #chatBallModal form textarea {
+            background: var(--bg-medium) !important;
+            color: var(--text-primary) !important;
+            border: 2px solid var(--primary-gold) !important;
+            border-radius: 10px !important;
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        #chatBallModal form input:focus,
+        #chatBallModal form textarea:focus {
+            outline: none;
+            border-color: var(--primary-gold-light) !important;
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
+        }
+
+        #chatBallModal form button {
+            background: var(--primary-gold) !important;
+            color: var(--bg-dark) !important;
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        #chatBallModal form button:hover {
+            background: var(--primary-gold-light) !important;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* ===== Scrollbar ===== */
+        ::-webkit-scrollbar {
+            width: 10px;
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--primary-gold), var(--primary-gold-dark));
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-gold-light);
+        }
+
+        /* ===== Responsive Design ===== */
+        @media (max-width: 992px) {
+            .container {
+                padding: 0 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0.75rem 1rem;
+            }
+
+            .navbar .navbar-brand {
+                font-size: 1.4rem !important;
+            }
+
+            .card,
+            .modal-content {
+                border-radius: 12px !important;
+            }
+
+            #chatBallModal {
+                width: calc(100vw - 32px);
+                right: 16px;
+                bottom: 100px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .navbar .navbar-brand {
+                font-size: 1.2rem !important;
+                letter-spacing: 1px;
+            }
+
+            .form-control,
+            .form-select {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.9rem;
+            }
+
+            .property-img {
+                height: 140px;
+            }
+
+            #chatBallBtn {
+                width: 56px;
+                height: 56px;
+                bottom: 24px;
+                right: 24px;
+                font-size: 1.5rem;
+            }
+
+            #chatBallModal {
+                bottom: 90px;
+                right: 16px;
+                padding: 20px 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg">
+      <div class="container d-flex align-items-center">
+        <a class="navbar-brand" href="index.html">FINDORA</a>
+        <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">☰</button>
+        <div class="collapse navbar-collapse" id="navContent">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link" href="dashbord.html">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link active" href="search.html">Search</a></li>
+            <li class="nav-item"><a class="nav-link" href="Contact.html">Contact</a></li>
+            <li class="nav-item"><a class="nav-link" href="hr-dashboard.html">HR</a></li>
+                                <!-- ✅ هنا صورة البروفايل -->
+                    <li class="nav-item dropdown ms-3">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown"
+                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="https://i.pravatar.cc/40" alt="Profile" class="rounded-circle" width="40"
+                                height="40" style="object-fit: cover; border:2px solid #1f7aec;">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="#">
+                                    <i class="bi bi-person-circle me-2"></i> Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="#">
+                                    <i class="bi bi-gear me-2"></i> Settings
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center text-danger" href="#">
+                                    <i class="bi bi-box-arrow-right me-2"></i> Logout
+                                </a>
+                            </li>
+                        </ul>
+
+          </ul>
+          <div class="ms-3">
+            <!-- Back button removed (only in HR page) -->
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container my-4">
+        <input id="keywordSearch" type="text" class="form-control mb-3"
+            placeholder="Search contacts, companies, deals, and more">
+
+        <div class="row g-2">
+            <div class="col-md"><input id="minPrice" type="number" class="form-control" placeholder="Min Price ($)"></div>
+            <div class="col-md"><input id="maxPrice" type="number" class="form-control" placeholder="Max Price ($)"></div>
+            <div class="col-md"><input id="minArea" type="number" class="form-control" placeholder="Min Area (sq ft)"></div>
+            <div class="col-md"><input id="maxArea" type="number" class="form-control" placeholder="Max Area (sq ft)"></div>
+            <div class="col-md"><input id="location" type="text" class="form-control" placeholder="Location"></div>
+            <div class="col-md">
+                <select id="unitTypeSearch" class="form-select">
+                    <option value="">Unit Type</option>
+                    <option value="Apartment">Apartment</option>
+                    <option value="Villa">Villa</option>
+                    <option value="Clinic">Clinic</option>
+                    <option value="Showroom">Showroom</option>
+                    <option value="Office">Office</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="col-md">
+                <select id="paymentStatus" class="form-select">
+                    <option value="">Payment Status</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Installments">Installments</option>
+                </select>
+            </div>
+            <div class="col-md">
+                <select id="deliveryStatus" class="form-select">
+                    <option value="">Delivery Status</option>
+                    <option value="Immediate">Immediate</option>
+                    <option value="Later">Later</option>
+                </select>
+            </div>
+            <div class="col-md"><input id="rooms" type="number" class="form-control" placeholder="Rooms"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h5 class="mb-3">Search Results</h5>
+        <div id="resultsContainer"></div>
+    </div>
+
+    <div class="modal fade" id="propertyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content text-white">
+                <div class="modal-header">
+                    <h5 class="modal-title">Property Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modalBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Ball Button -->
+    <div id="chatBallBtn" title="Contact & Suggestions">
+        <span>💬</span>
+    </div>
+    <div id="chatBallModal">
+        <button class="close-btn"
+            onclick="document.getElementById('chatBallModal').classList.remove('active')">×</button>
+        <h5>About Findora CRM</h5>
+        <p>Findora CRM helps you manage real estate projects, units, and client contacts efficiently.</p>
+        <div class="contact-info">
+            <strong>Contact Us:</strong><br>
+            <span>📞 0123-456-789</span><br>
+            <span>✉️ info@findora.com</span>
+        </div>
+        <form id="chatBallForm">
+            <input type="text" id="chatName" placeholder="Your Name" required>
+            <input type="email" id="chatEmail" placeholder="Your Email" required>
+            <textarea id="chatMsg" rows="3" placeholder="Your suggestion or inquiry" required></textarea>
+            <button type="submit">Send</button>
+        </form>
+        <div id="chatBallSuccess"
+            style="display:none;color:#4caf50;font-size:0.95rem;margin-top:8px;">Thank you! Your message has been
+            sent.</div>
+    </div>
+
+    <script>
+        // جلب المشاريع والوحدات من localStorage
+        let projects = JSON.parse(localStorage.getItem("projectsData")) || [];
+
+        // جمع كل الوحدات من جميع المشاريع في مصفوفة واحدة مع ربطها باسم المشروع
+        function getAllUnitsIndexed() {
+            const projectsLocal = JSON.parse(localStorage.getItem("projectsData")) || projects || [];
+            let units = [];
+            projectsLocal.forEach(project => {
+                (project.units || []).forEach(unit => {
+                    units.push({
+                        ...unit,
+                        projectName: project.name,
+                        projectImg: project.img
+                    });
+                });
+            });
+            // attach stable index for linking between pages
+            return units.map((u, i) => ({ ...u, _idx: i }));
+        }
+
+        function renderUnits(list) {
+            const container = document.getElementById("resultsContainer");
+            container.innerHTML = "";
+            // عرض عدد النتائج
+            const countDiv = document.createElement('div');
+            countDiv.className = "mb-2 text-end text-info";
+            countDiv.textContent = `Results: ${list.length}`;
+            container.appendChild(countDiv);
+            if (list.length === 0) {
+                container.innerHTML += `<p class="text-center mt-3">No results found</p>`;
+                return;
+            }
+            list.forEach((u) => {
+                container.innerHTML += `
+        <div class="card mb-3 p-3">\n          <div class="row g-0 align-items-center">\n            <div class="col-md-4"><img src="${u.img || u.projectImg || 'https://picsum.photos/300/200'}" class="property-img"></div>\n            <div class="col-md-6 p-3">\n              <h6>${u.name} <span class="text-info small">(${u.projectName})</span></h6>\n              <p class="mb-1">\n                ${u.rooms ?? '-'} Rooms | ${u.area || '-'} | ${u.price || '-'} | ${u.payment || '-'} | ${u.delivery || '-'} | ${u.status || '-'} | <span class="badge bg-secondary">${u.type || '-'}</span>\n              </p>\n              <p class="mb-1 small text-muted">${u.desc ? u.desc : ''}</p>\n            </div>\n            <div class="col-md-2 text-md-end text-center">\n              <a href="property.html?idx=${(typeof u._idx !== 'undefined') ? u._idx : 0}" class="btn btn-primary mt-2 mt-md-0">View Details</a>\n            </div>\n          </div>\n        </div>`;
+            });
+        }
+
+                // Details are now shown on the dedicated `property.html` page (link created above)
+
+        function filterUnits() {
+            // تحديث المشاريع والوحدات من localStorage في كل عملية بحث
+            let allUnits = getAllUnitsIndexed();
+
+            let kw = document.getElementById("keywordSearch").value.trim().toLowerCase();
+            let minP = parseInt(document.getElementById("minPrice").value) || 0;
+            let maxP = parseInt(document.getElementById("maxPrice").value) || Infinity;
+            let minA = parseInt(document.getElementById("minArea").value) || 0;
+            let maxA = parseInt(document.getElementById("maxArea").value) || Infinity;
+            let loc = document.getElementById("location").value.trim().toLowerCase();
+            let type = document.getElementById("unitTypeSearch").value;
+            let pay = document.getElementById("paymentStatus").value;
+            let del = document.getElementById("deliveryStatus").value;
+            let rms = parseInt(document.getElementById("rooms").value) || 0;
+
+            // البحث المتقدم: البحث في جميع الحقول المهمة
+            const filtered = allUnits.filter(u => {
+                // البحث بالكلمة المفتاحية في كل الحقول والفلاتر
+                let keywordMatch = false;
+                if (kw === "") keywordMatch = true;
+                else {
+                    let fields = [
+                        u.name,
+                        u.projectName,
+                        u.desc,
+                        u.price,
+                        u.status,
+                        u.payment,
+                        u.delivery,
+                        u.area,
+                        u.type
+                    ];
+                    // البحث النصي في كل الحقول
+                    keywordMatch = fields.some(f => f && f.toString().toLowerCase().includes(kw));
+
+                    // البحث الرقمي: لو المستخدم كتب رقم في البحث، يتم مطابقة عدد الغرف والمساحة أيضاً
+                    if (!keywordMatch && kw.match(/^\d+$/)) {
+                        let num = parseInt(kw);
+                        // مطابقة عدد الغرف
+                        if (u.rooms && parseInt(u.rooms) === num) keywordMatch = true;
+                        // مطابقة المساحة
+                        let areaVal = u.area ? parseInt(String(u.area).replace(/[^\d]/g, "")) : 0;
+                        if (areaVal === num) keywordMatch = true;
+                    }
+                }
+
+                // فلترة السعر
+                    let priceVal = u.price ? parseInt(String(u.price).replace(/[^\d]/g, "")) : 0;
+                let priceMatch = (priceVal >= minP && priceVal <= maxP);
+
+                // فلترة المساحة
+                    let areaVal = u.area ? parseInt(String(u.area).replace(/[^\d]/g, "")) : 0;
+                let areaMatch = (areaVal >= minA && areaVal <= maxA);
+
+                // فلترة الموقع (يبحث في الوصف واسم المشروع)
+                let locationMatch = (loc === "" || (u.desc && u.desc.toLowerCase().includes(loc)) || (u.projectName && u.projectName.toLowerCase().includes(loc)));
+
+                // فلترة نوع العقار (لو فيه نوع)
+                let typeMatch = (type === "" || (u.type && u.type === type));
+
+                // فلترة الدفع
+                let payMatch = (pay === "" || (u.payment && u.payment === pay));
+
+                // فلترة التسليم
+                let delMatch = (del === "" || (u.delivery && (u.delivery === del || (del === "Later" && u.delivery === "After period"))));
+
+                // فلترة عدد الغرف
+                let roomsMatch = (rms === 0 || (u.rooms && u.rooms === rms));
+
+                // فلترة الحالة
+                let statusMatch = true;
+                // يمكن إضافة فلتر حالة الوحدة هنا إذا أردت مستقبلاً
+
+                return keywordMatch && priceMatch && areaMatch && locationMatch && typeMatch && payMatch && delMatch && roomsMatch && statusMatch;
+            });
+            renderUnits(filtered);
+        }
+
+        document.querySelectorAll("input,select").forEach(el => el.addEventListener("input", filterUnits));
+        document.querySelectorAll(".badge").forEach(badge => {
+            badge.addEventListener("click", () => {
+                // ضع نص البادج في خانة البحث
+                document.getElementById("keywordSearch").value = badge.textContent;
+                // نفذ البحث فورًا
+                filterUnits();
+                // مرر للنتائج
+                document.getElementById("resultsContainer").scrollIntoView({ behavior: "smooth" });
+            });
+        });
+
+    // عند أول تحميل للصفحة، اعرض كل الوحدات بشكل صحيح
+    filterUnits();
+
+    document.getElementById('chatBallBtn').onclick = function() {
+        document.getElementById('chatBallModal').classList.add('active');
+    };
+    document.getElementById('chatBallForm').onsubmit = function(e) {
+        e.preventDefault();
+        document.getElementById('chatBallSuccess').style.display = 'block';
+        setTimeout(function() {
+            document.getElementById('chatBallSuccess').style.display = 'none';
+            document.getElementById('chatBallModal').classList.remove('active');
+            document.getElementById('chatBallForm').reset();
+        }, 2000);
+        // هنا يمكنك إضافة كود لإرسال البيانات للسيرفر إذا أردت
+    };
+
+    // تأكد من ربط الحدث بعد تحميل الصفحة بالكامل
+    window.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll(".badge").forEach(badge => {
+            badge.addEventListener("click", () => {
+                document.getElementById("keywordSearch").value = badge.textContent;
+                filterUnits();
+                document.getElementById("resultsContainer").scrollIntoView({ behavior: "smooth" });
+            });
+        });
+    });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

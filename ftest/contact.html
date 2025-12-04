@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Findora CRM - Contacts</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Font Awesome for icons (e.g., profile dropdown) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+      <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Palette moved to styles.css */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-dark) !important;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
+            color: var(--text-primary) !important;
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* ===== Navbar ===== */
+        nav.navbar {
+            background: rgba(26, 26, 26, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            padding: 1rem 2rem;
+        }
+
+        nav .navbar-brand,
+        nav .nav-link,
+        nav .navbar-text {
+            color: var(--primary-gold) !important;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        nav .navbar-brand {
+            font-size: 1.7rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        nav .navbar-brand:hover {
+            color: var(--primary-gold-light) !important;
+            transform: scale(1.05);
+        }
+
+        nav .nav-link {
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px;
+        }
+
+        nav .nav-link:hover {
+            color: var(--text-primary) !important;
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .navbar-nav .active .nav-link {
+            font-weight: 700;
+            color: var(--primary-gold) !important;
+            background: rgba(212, 175, 55, 0.15);
+        }
+
+        .navbar-toggler {
+            border: 1px solid var(--primary-gold);
+        }
+
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='%23d4af37' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+        }
+
+        /* ===== Main Content ===== */
+        main.container {
+            padding-top: 2rem;
+            padding-bottom: 3rem;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== Buttons ===== */
+        .btn-add-contact {
+            background: var(--primary-gold) !important;
+            border: none;
+            color: var(--bg-dark) !important;
+            font-weight: 600;
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-add-contact::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-add-contact:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-add-contact:hover {
+            background: var(--primary-gold-light) !important;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-delete {
+            background: var(--bg-hover);
+            border: none;
+            color: var(--primary-gold);
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-delete:hover {
+            background: #555;
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+
+        .btn-edit {
+            background: var(--bg-medium);
+            border: 1px solid var(--primary-gold);
+            color: var(--primary-gold);
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-edit:hover {
+            background: var(--primary-gold);
+            color: var(--bg-dark);
+            transform: translateY(-1px);
+        }
+
+        /* ===== Table ===== */
+        table {
+            background: var(--bg-medium);
+            border-collapse: separate;
+            border-spacing: 0;
+            border: 1px solid var(--primary-gold);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            animation: fadeIn 0.6s ease-out 0.2s both;
+        }
+
+        thead tr {
+            border-bottom: 2px solid var(--primary-gold);
+            background: var(--bg-card);
+        }
+
+        thead th {
+            padding: 1rem 1.5rem;
+            font-weight: 700;
+            text-align: left;
+            vertical-align: middle;
+            font-size: 0.95rem;
+            color: var(--primary-gold);
+        }
+
+        tbody td {
+            padding: 1rem 1.5rem;
+            font-size: 0.9rem;
+            vertical-align: middle;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        tbody tr:hover td {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        tbody td:first-child {
+            color: var(--primary-gold);
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            background: var(--primary-gold);
+            color: var(--bg-dark);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-info {
+            background: var(--bg-card);
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            color: var(--primary-gold);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            animation: fadeIn 0.6s ease-out 0.3s both;
+        }
+
+        /* ===== Form Controls ===== */
+        .form-control {
+            background: var(--bg-medium) !important;
+            border: 2px solid var(--primary-gold) !important;
+            color: var(--text-primary) !important;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-gold-light) !important;
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
+            background: var(--bg-hover) !important;
+            transform: translateY(-2px);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* ===== Modal ===== */
+        .modal-content {
+            background: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+            border-radius: 20px;
+            border: 1px solid var(--primary-gold);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .modal-title {
+            color: var(--primary-gold);
+            font-weight: 700;
+        }
+
+        .btn-close-white {
+            filter: invert(1);
+        }
+
+        /* ===== Chat Ball ===== */
+        #chatBallBtn {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            z-index: 9999;
+            width: 64px;
+            height: 64px;
+            background: var(--primary-gold);
+            color: var(--bg-dark);
+            border-radius: 50%;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 3px solid var(--bg-dark);
+        }
+
+        #chatBallBtn:hover {
+            background: var(--primary-gold-light);
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 12px 40px rgba(212, 175, 55, 0.4);
+        }
+
+        #chatBallModal {
+            position: fixed;
+            bottom: 110px;
+            right: 32px;
+            z-index: 9999;
+            width: 360px;
+            max-width: calc(100vw - 64px);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-radius: 20px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--primary-gold);
+            display: none;
+            flex-direction: column;
+            padding: 24px 20px 16px 20px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #chatBallModal.active {
+            display: flex;
+        }
+
+        #chatBallModal .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: var(--primary-gold);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        #chatBallModal .close-btn:hover {
+            background: rgba(212, 175, 55, 0.1);
+            transform: rotate(90deg);
+        }
+
+        #chatBallModal h5 {
+            margin-bottom: 8px;
+            color: var(--primary-gold);
+        }
+
+        #chatBallModal p,
+        #chatBallModal .contact-info {
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+        }
+
+        #chatBallModal form input,
+        #chatBallModal form textarea {
+            background: var(--bg-medium);
+            color: var(--text-primary);
+            border: 2px solid var(--primary-gold);
+            margin-bottom: 10px;
+            border-radius: 10px;
+            padding: 10px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        #chatBallModal form input:focus,
+        #chatBallModal form textarea:focus {
+            outline: none;
+            border-color: var(--primary-gold-light);
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
+        }
+
+        #chatBallModal form button {
+            background: var(--primary-gold);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 10px;
+            padding: 10px;
+            width: 100%;
+            font-weight: 600;
+            margin-top: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        #chatBallModal form button:hover {
+            background: var(--primary-gold-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* ===== Table Responsive ===== */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 12px;
+        }
+
+        table {
+            min-width: 800px;
+            width: 100%;
+        }
+
+        /* ===== Scrollbar ===== */
+        ::-webkit-scrollbar {
+            width: 10px;
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--primary-gold), var(--primary-gold-dark));
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-gold-light);
+        }
+
+        /* ===== Responsive Design ===== */
+        @media (max-width: 991px) {
+            main.container {
+                padding: 1rem;
+                max-width: 100%;
+            }
+
+            .navbar-nav {
+                flex-direction: column;
+                gap: 10px;
+                margin-top: 1rem;
+            }
+
+            nav.navbar {
+                padding: 0.75rem 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .d-flex.gap-2 {
+                flex-wrap: wrap;
+            }
+
+            .btn-add-contact {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            main.container {
+                padding: 0.75rem;
+            }
+
+            table {
+                min-width: 500px;
+                font-size: 0.85rem;
+            }
+
+            thead th,
+            tbody td {
+                padding: 0.75rem 1rem;
+            }
+
+            .btn-add-contact {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            nav .navbar-brand {
+                font-size: 1.4rem;
+            }
+
+            #chatBallModal {
+                width: calc(100vw - 32px);
+                right: 16px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            nav .navbar-brand {
+                font-size: 1.2rem;
+                letter-spacing: 1px;
+            }
+
+            table {
+                min-width: 400px;
+                font-size: 0.8rem;
+            }
+
+            #chatBallBtn {
+                width: 56px;
+                height: 56px;
+                bottom: 24px;
+                right: 24px;
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+  <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+      <div class="container d-flex align-items-center">
+        <a class="navbar-brand" href="index.html">FINDORA</a>
+        <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">☰</button>
+        <div class="collapse navbar-collapse" id="navContent">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link" href="dashbord.html">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="search.html">Search</a></li>
+            <li class="nav-item"><a class="nav-link active" href="Contact.html">Contact</a></li>
+            <li class="nav-item"><a class="nav-link" href="hr-dashboard.html">HR</a></li>
+                                <!-- ✅ هنا صورة البروفايل -->
+                    <li class="nav-item dropdown ms-3">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown"
+                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="https://i.pravatar.cc/40" alt="Profile" class="rounded-circle" width="40"
+                                height="40" style="object-fit: cover; border:2px solid #1f7aec;">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="#">
+                                    <i class="bi bi-person-circle me-2"></i> Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center" href="#">
+                                    <i class="bi bi-gear me-2"></i> Settings
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center text-danger" href="#">
+                                    <i class="bi bi-box-arrow-right me-2"></i> Logout
+                                </a>
+                            </li>
+                        </ul>
+
+          </ul>
+          <div class="ms-3">
+            <!-- Back button removed (only in HR page) -->
+          </div>
+        </div>
+      </div>
+    </nav>
+
+  <main class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <h1>Contacts</h1>
+      <div class="d-flex gap-2">
+        <button class="btn btn-add-contact" data-bs-toggle="modal" data-bs-target="#addContactModal">Add
+          Contact</button>
+        <button class="btn btn-add-contact" data-bs-toggle="modal" data-bs-target="#importExcelModal">Import from
+          Excel</button>
+      </div>
+    </div>
+
+    <div class="search-container mb-4">
+      <input type="search" id="contactSearch" class="form-control" placeholder="Search by name, unit, or number" />
+      <div id="searchInfo" class="search-info mt-2" style="display: none;">
+        <span id="searchResultsCount">0</span> contacts found
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="w-100 text-nowrap">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Number</th>
+            <th>Status</th>
+            <th>Agent</th>
+            <th>Employee Contacted</th>
+            <th>Last Contact</th>
+            <th>Notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="contactsTable">
+          <!-- Contact rows will be rendered here by JavaScript -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Modal Add Contact -->
+  <div class="modal fade" id="addContactModal" tabindex="-1" aria-labelledby="addContactModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addContactModalLabel">Add Contact</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addContactForm">
+            <div class="mb-3">
+              <label for="contactName" class="form-label">Name</label>
+              <input type="text" class="form-control" id="contactName" required>
+            </div>
+            <div class="mb-3">
+              <label for="contactNumber" class="form-label">Number</label>
+              <input type="text" class="form-control" id="contactNumber" required>
+            </div>
+            <div class="mb-3">
+              <label for="contactStatus" class="form-label">Status</label>
+              <select class="form-select" id="contactStatus">
+                <option value="Hot">Hot</option>
+                <option value="Warm">Warm</option>
+                <option value="Cold">Cold</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="contactAgent" class="form-label">Agent</label>
+              <input type="text" class="form-control" id="contactAgent">
+            </div>
+            <div class="mb-3">
+              <label for="employeeContacted" class="form-label">Employee Contacted</label>
+              <input type="text" class="form-control" id="employeeContacted">
+            </div>
+            <div class="mb-3">
+              <label for="contactNotes" class="form-label">Notes about client</label>
+              <textarea class="form-control" id="contactNotes" rows="2"></textarea>
+            </div>
+            <button type="submit" class="btn btn-add-contact w-100">Save</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Edit Contact -->
+  <div class="modal fade" id="editContactModal" tabindex="-1" aria-labelledby="editContactModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editContactModalLabel">Edit Contact</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editContactForm">
+            <div class="mb-3">
+              <label class="form-label">Name</label>
+              <input type="text" class="form-control" id="editName" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Number</label>
+              <input type="text" class="form-control" id="editNumber" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Status</label>
+              <select class="form-select" id="editStatus">
+                <option value="Hot">Hot</option>
+                <option value="Warm">Warm</option>
+                <option value="Cold">Cold</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Agent</label>
+              <input type="text" class="form-control" id="editAgent">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Employee Contacted</label>
+              <input type="text" class="form-control" id="editEmployeeContacted">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Notes about client</label>
+              <textarea class="form-control" id="editNotes" rows="2"></textarea>
+            </div>
+            <button type="submit" class="btn btn-add-contact w-100">Update</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Modal for Import from Excel -->
+  <div class="modal fade" id="importExcelModal" tabindex="-1" aria-labelledby="importExcelModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header">
+          <h5 class="modal-title" id="importExcelModalLabel">Import Contacts from Excel</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Please ensure your Excel file has columns named "Name", "Number", "Status", "Agent", and "Last Contact".
+          </p>
+          <div class="mb-3">
+            <label for="excelFile" class="form-label">Upload Excel File</label>
+            <input class="form-control" type="file" id="excelFile" accept=".xlsx, .xls">
+          </div>
+          <button type="button" class="btn btn-add-contact w-100" id="uploadExcelBtn">Import Contacts</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Ball Button -->
+  <div id="chatBallBtn" title="Contact & Suggestions">
+    <span>💬</span>
+  </div>
+  <div id="chatBallModal">
+    <button class="close-btn" onclick="document.getElementById('chatBallModal').classList.remove('active')">×</button>
+    <h5>About Findora CRM</h5>
+    <p>Findora CRM helps you manage real estate projects, units, and client contacts efficiently.</p>
+    <div class="contact-info">
+      <strong>Contact Us:</strong><br>
+      <span>📞 0123-456-789</span><br>
+      <span>✉️ info@findora.com</span>
+    </div>
+    <form id="chatBallForm">
+      <input type="text" id="chatName" placeholder="Your Name" required>
+      <input type="email" id="chatEmail" placeholder="Your Email" required>
+      <textarea id="chatMsg" rows="3" placeholder="Your suggestion or inquiry" required></textarea>
+      <button type="submit">Send</button>
+    </form>
+    <div id="chatBallSuccess" style="display:none;color:#4caf50;font-size:0.95rem;margin-top:8px;">Thank you! Your message has been sent.</div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Store contacts data
+    let contacts = [
+      {
+        name: "Sophia Carter",
+        number: "+1234567890",
+        status: "Hot",
+        agent: "Ethan Bennett",
+        employeeContacted: "John Doe",
+        lastContact: "2 days ago",
+        notes: "Important client"
+      }
+    ];
+
+    // Render contacts table
+    function renderContacts(filteredContacts = null) {
+      const contactsToRender = filteredContacts || contacts;
+      const tableBody = document.getElementById('contactsTable');
+
+      tableBody.innerHTML = ''; // Clear existing rows
+
+      if (contactsToRender.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-4">No contacts found.</td></tr>`;
+        // Hide search info if no contacts
+        document.getElementById('searchInfo').style.display = 'none';
+        return;
+      }
+
+      contactsToRender.forEach((contact, index) => {
+        // Ensure index is correct for the original 'contacts' array when not filtered
+        // This is important for edit/delete operations to target the correct item
+        const originalIndex = contacts.findIndex(c =>
+          c.name === contact.name &&
+          c.number === contact.number &&
+          c.status === contact.status &&
+          c.agent === contact.agent &&
+          c.employeeContacted === contact.employeeContacted &&
+          c.lastContact === contact.lastContact &&
+          c.notes === contact.notes
+        );
+
+        const row = `
+          <tr>
+            <td>${contact.name}</td>
+            <td>${contact.number}</td>
+            <td><span class="status-badge">${contact.status}</span></td>
+            <td><a href="#">${contact.agent}</a></td>
+            <td>${contact.employeeContacted ? contact.employeeContacted : "-"}</td>
+            <td>${formatLastContact(contact.lastContact)}</td>
+            <td>${contact.notes ? contact.notes : "-"}</td>
+            <td>
+              <button class="btn-edit editBtn" data-index="${originalIndex !== -1 ? originalIndex : index}">Edit</button>
+              <button class="btn-delete deleteBtn" data-index="${originalIndex !== -1 ? originalIndex : index}">Delete</button>
+            </td>
+          </tr>
+        `;
+        tableBody.insertAdjacentHTML('beforeend', row);
+      });
+
+      // Update search info
+      const searchInfo = document.getElementById('searchInfo');
+      const resultsCount = document.getElementById('searchResultsCount');
+
+      if (filteredContacts) {
+        resultsCount.textContent = filteredContacts.length;
+        searchInfo.style.display = 'block';
+      } else {
+        searchInfo.style.display = 'none'; // Hide if not a search result
+      }
+    }
+
+    // دالة لحساب الفرق بين تاريخين وعرضه بشكل مناسب
+    function formatLastContact(dateStr) {
+      const contactDate = new Date(dateStr);
+      const now = new Date();
+      const diffMs = now - contactDate;
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      if (diffDays === 0) return "Today";
+      if (diffDays === 1) return "1 day ago";
+      if (diffDays < 7) return `${diffDays} days ago`;
+      if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago `;
+      return contactDate.toLocaleDateString();
+    }
+
+    // Search contacts
+    function searchContacts(query) {
+      const searchTerm = query.toLowerCase().trim();
+      if (!searchTerm) {
+        renderContacts(); // If query is empty, show all contacts
+        return;
+      }
+
+      const filtered = contacts.filter(contact =>
+        contact.name.toLowerCase().includes(searchTerm) ||
+        contact.status.toLowerCase().includes(searchTerm) ||
+        contact.number.toLowerCase().includes(searchTerm) ||
+        contact.agent.toLowerCase().includes(searchTerm) ||
+        contact.employeeContacted.toLowerCase().includes(searchTerm) ||
+        contact.lastContact.toLowerCase().includes(searchTerm) ||
+        (contact.notes && contact.notes.toLowerCase().includes(searchTerm))
+      );
+
+      renderContacts(filtered);
+    }
+
+    // Delete contact
+    document.addEventListener('click', function (e) {
+      if (e.target.classList.contains('deleteBtn')) {
+        const index = parseInt(e.target.getAttribute('data-index')); // Parse index to integer
+        if (!isNaN(index) && index >= 0 && index < contacts.length) {
+          contacts.splice(index, 1);
+          renderContacts();
+        }
+      }
+    });
+
+    // Add new contact
+    document.getElementById('addContactForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const newContact = {
+        name: document.getElementById('contactName').value.trim(),
+        number: document.getElementById('contactNumber').value.trim(),
+        status: document.getElementById('contactStatus').value,
+        agent: document.getElementById('contactAgent').value.trim(),
+        employeeContacted: document.getElementById('employeeContacted').value.trim(),
+        lastContact: new Date().toISOString(), // تاريخ اليوم تلقائي
+        notes: document.getElementById('contactNotes').value.trim()
+      };
+
+      // Basic validation
+      if (!newContact.name || !newContact.number) {
+        alert('Name and Number are required fields.');
+        return;
+      }
+
+      contacts.push(newContact);
+      renderContacts();
+
+      document.getElementById('addContactForm').reset();
+      const modal = bootstrap.Modal.getInstance(document.getElementById('addContactModal'));
+      modal.hide();
+      alert('Contact added successfully!');
+    });
+
+    // Edit contact
+    let currentEditIndex = null;
+    document.addEventListener('click', function (e) {
+      if (e.target.classList.contains('editBtn')) {
+        currentEditIndex = parseInt(e.target.getAttribute('data-index')); // Parse index to integer
+        if (!isNaN(currentEditIndex) && currentEditIndex >= 0 && currentEditIndex < contacts.length) {
+          const contact = contacts[currentEditIndex];
+
+          document.getElementById('editName').value = contact.name;
+          document.getElementById('editNumber').value = contact.number;
+          document.getElementById('editStatus').value = contact.status;
+          document.getElementById('editAgent').value = contact.agent;
+          document.getElementById('editEmployeeContacted').value = contact.employeeContacted;
+          document.getElementById('editNotes').value = contact.notes || "";
+
+          new bootstrap.Modal(document.getElementById('editContactModal')).show();
+        }
+      }
+    });
+
+    // Update contact
+    document.getElementById('editContactForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (currentEditIndex !== null && !isNaN(currentEditIndex) && currentEditIndex >= 0 && currentEditIndex < contacts.length) {
+        const updatedContact = {
+          name: document.getElementById('editName').value.trim(),
+          number: document.getElementById('editNumber').value.trim(),
+          status: document.getElementById('editStatus').value,
+          agent: document.getElementById('editAgent').value.trim(),
+          employeeContacted: document.getElementById('editEmployeeContacted').value.trim(),
+          lastContact: new Date().toISOString(), // تاريخ اليوم تلقائي
+          notes: document.getElementById('editNotes').value.trim()
+        };
+
+        // Basic validation
+        if (!updatedContact.name || !updatedContact.number) {
+          alert('Name and Number are required fields.');
+          return;
+        }
+
+        contacts[currentEditIndex] = updatedContact;
+        renderContacts();
+        bootstrap.Modal.getInstance(document.getElementById('editContactModal')).hide();
+        alert('Contact updated successfully!');
+        currentEditIndex = null; // Reset index
+      }
+    });
+
+    // Search functionality
+    document.getElementById('contactSearch').addEventListener('input', function (e) {
+      searchContacts(e.target.value);
+    });
+
+    // Function to handle Excel file upload
+    document.getElementById('uploadExcelBtn').addEventListener('click', function () {
+      const fileInput = document.getElementById('excelFile');
+      const file = fileInput.files[0];
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const json = XLSX.utils.sheet_to_json(worksheet);
+
+            // Map Excel columns to contact object properties
+            const newContacts = json.map(row => ({
+              name: (row["Name"] || "").toString().trim(),
+              number: (row["Number"] || "").toString().trim(),
+              status: (row["Status"] || "Cold").toString().trim(), // Default status if not provided
+              agent: (row["Agent"] || "").toString().trim(),
+              employeeContacted: (row["Employee Contacted"] || "").toString().trim(),
+              lastContact: (row["Last Contact"] || "").toString().trim(),
+              notes: (row["Notes"] || "").toString().trim() // Map notes column
+            })).filter(contact => contact.name && contact.number); // Filter out contacts without name or number
+
+            if (newContacts.length > 0) {
+              contacts = contacts.concat(newContacts);
+              renderContacts(); // Re-render the table with new data
+              alert(`${newContacts.length} contacts imported successfully!`);
+            } else {
+              alert('No valid contacts found in the Excel file. Please check column headers and data.');
+            }
+
+          } catch (error) {
+            console.error("Error processing Excel file:", error);
+            alert('Error processing Excel file. Please ensure it is a valid Excel format and columns are correct.');
+          } finally {
+            // Always close modal and clear input
+            const modal = bootstrap.Modal.getInstance(document.getElementById('importExcelModal'));
+            modal.hide();
+            fileInput.value = ''; // Clear the file input
+          }
+        };
+        reader.onerror = function (error) {
+          console.error("FileReader error:", error);
+          alert('Error reading file. Please try again.');
+          const modal = bootstrap.Modal.getInstance(document.getElementById('importExcelModal'));
+          modal.hide();
+          fileInput.value = '';
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        alert('Please select an Excel file to import.');
+      }
+    });
+
+    // Chat Ball functionality
+    document.getElementById('chatBallBtn').onclick = function () {
+      document.getElementById('chatBallModal').classList.add('active');
+    };
+    document.getElementById('chatBallForm').onsubmit = function (e) {
+      e.preventDefault();
+      document.getElementById('chatBallSuccess').style.display = 'block';
+      setTimeout(function () {
+        document.getElementById('chatBallSuccess').style.display = 'none';
+        document.getElementById('chatBallModal').classList.remove('active');
+        document.getElementById('chatBallForm').reset();
+      }, 2000);
+      // هنا يمكنك إضافة كود لإرسال البيانات للسيرفر إذا أردت
+    };
+
+    // Initial render
+    renderContacts();
+  </script>
+</body>
+
+</html>
