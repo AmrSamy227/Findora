@@ -1,0 +1,27 @@
+# Ignore only development and build files, NOT the HTML
+node_modules/
+.git/
+.github/
+.vscode/
+.idea/
+.DS_Store
+*.pem
+.env
+.env.local
+.env.*.local
+
+# Ignore lock files (Vercel installs dependencies)
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# Ignore development/testing
+__tests__/
+*.test.js
+*.test.ts
+.next/
+app/
+components/
+hooks/
+lib/
+styles/

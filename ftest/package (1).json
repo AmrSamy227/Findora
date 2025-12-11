@@ -1,0 +1,29 @@
+{
+  "name": "findora",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FINDORA - Your Smart Real Estate Assistant",
+  "scripts": {
+    "dev": "python3 -m http.server 8000 --directory .",
+    "build": "echo 'No build step needed for static site'",
+    "start": "python3 -m http.server 8000 --directory ."
+  },
+  "dependencies": {
+    "next": "16.0.8",
+    "react": "19.2.1",
+    "react-dom": "19.2.1",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "lucide-react": "0.560.0",
+    "tailwind-merge": "3.4.0",
+    "tailwindcss-animate": "1.0.7"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "@types/node": "25.0.0",
+    "typescript": "5.9.3",
+    "tailwindcss": "4.1.17",
+    "postcss": "8.5.6"
+  }
+}
